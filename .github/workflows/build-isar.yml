@@ -1,0 +1,79 @@
+name: Build and commit Isar DB
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  # 允许 workflow push
+
+    steps:
+      # 1️ Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2️ Setup Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.7'
+
+      # 3️ Install dependencies
+      - name: Pub get
+        run: flutter pub get
+
+      # 4️ Download Isar native binaries
+      - name: Download Isar native binaries
+        run: |
+          curl -Lf https://github.com/ahmtydn/isar_plus/releases/latest/download/libisar_linux_x64.so -o libisar.so
+          chmod +x libisar.so
+
+      # 5️ Build runner codegen
+      - name: Build Runner Codegen
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      # 6️ Build Isar database
+      - name: Build Isar DB
+        env:
+          LD_LIBRARY_PATH: ${{ github.workspace }}
+        run: flutter pub run bin/build_isar.dart
+
+      # 7️ Commit index.isar to isolated branch
+      - name: Commit index.isar to index-data branch
+        if: success()
+        run: |
+          ASSET_BRANCH="index-data"
+
+          git config user.name "GitHub Actions Bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # 检查生成文件
+          if [ ! -f dist/index.isar ]; then
+            echo "错误：未找到 dist/index.isar，请检查 build_isar.dart"
+            exit 1
+          fi
+
+          # 创建孤立分支
+          git checkout --orphan $ASSET_BRANCH
+
+          # 清空工作区
+          git rm -rf .
+
+          # 复制 index.isar 到根目录
+          cp dist/index.isar ./index.isar
+
+          # 添加并提交
+          git add index.isar
+          git commit -m "chore: update index.isar $(date +'%Y%m%d%H%M%S') [skip ci]"
+
+          # 强制 push
+          git push --force origin $ASSET_BRANCH
+
+          echo "成功将 index.isar 发布到 $ASSET_BRANCH 分支，仅保留最新提交"

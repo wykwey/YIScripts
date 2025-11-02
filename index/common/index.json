@@ -1,0 +1,13 @@
+{
+  "name": "通用脚本集",
+  "scripts": [
+    {
+      "name": "通用脚本集",
+      "scriptName": "common.js",
+      "url": "xxx.com/login",
+      "author": "Community",
+      "description": "通用课程导入脚本"
+    }
+  ]
+}
+

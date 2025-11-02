@@ -1,0 +1,13 @@
+{
+  "name": "示例脚本集A",
+  "scripts": [
+    {
+      "name": "示例脚本集A",
+      "scriptName": "example.js",
+      "url": "xxx.com/login",
+      "author": "Community",
+      "description": "示例课程导入脚本A"
+    }
+  ]
+}
+

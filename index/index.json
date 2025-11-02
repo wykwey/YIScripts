@@ -1,0 +1,13 @@
+[
+  {
+    "school": "示例学校A",
+    "letter_index": "A",
+    "school_index": "shool_A/index.json"
+  },
+  {
+    "school": "通用脚本集",
+    "letter_index": "C",
+    "school_index": "common/index.json"
+  }
+]
+
