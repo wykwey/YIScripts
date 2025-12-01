@@ -1,0 +1,11 @@
+{
+  "scripts": [
+    {
+      "name": "河南职业技术学院",
+      "scriptName": "hnzy.js",
+      "url": "https://one.hnzj.edu.cn/common-service/kcb-pc/personage/personage",
+      "author": "Community",
+      "description": "河南职业技术学院课表导入脚本"
+    }
+  ]
+}

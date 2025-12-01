@@ -87,22 +87,29 @@
   }
 
 
-  //  回调模块（统一接口）
-  function sendResult(success, data = null, message = '') {
-    const payload = { success, data, message, time: Date.now() };
-    if (window.YiClassBridge?.postMessage) {
-      YiClassBridge.postMessage(JSON.stringify(payload));
+  //  回调模块（仅返回处理后的课表数据）
+  function sendResult(data) {
+    if (window.YiClassChannel?.postMessage) {
+      YiClassChannel.postMessage(JSON.stringify(data));
+    }
+  }
+ 
+  //  显示消息（失败时仅提示并终止，不回调）
+  function showMessage(message) {
+    if (typeof message === 'string' && message) {
+      alert(message);
     }
   }
   
-  // 🚀 主流程控制（封装为函数）
+  //  主流程控制（封装为函数）
   
   async function runImport() {
     try {
       // 登录检测（第一个模块，失败立即中断）
       const loggedIn = await checkLogin();
       if (!loggedIn) {
-        return sendResult(false, null, '未登录，请先登录教务系统');
+        showMessage('未登录，请先登录教务系统');
+        return;
       }
 
       // 公告（不失败）
@@ -117,21 +124,24 @@
       // 抓取
       const raw = await fetchRawData();
       if (!raw) {
-        return sendResult(false, null, '课表数据为空');
+        showMessage('课表数据为空');
+        return;
       }
 
       // 解析
       const parsed = parseData(raw);
       if (!parsed || !parsed.courses) {
-        return sendResult(false, null, '课表解析失败');
+        showMessage('课表解析失败');
+        return;
       }
 
       // 合并
       const timetable = mergeTimetable('课表', settings, parsed.courses);
 
-      sendResult(true, timetable, '导入成功');
+      sendResult(timetable);
     } catch (err) {
-      sendResult(false, null, err?.message || '未知错误');
+      showMessage(err?.message || '未知错误');
+      return;
     }
   }
 
