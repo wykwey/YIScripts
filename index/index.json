@@ -8,6 +8,11 @@
     "school": "通用脚本集",
     "letter_index": "C",
     "school_index": "common/index.json"
+  },
+  {
+    "school": "河南职业技术学院",
+    "letter_index": "H",
+    "school_index": "hnzy/index.json"
   }
 ]
 
