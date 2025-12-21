@@ -130,8 +130,5 @@ async function fetchCourses(year, term) {
     }
     
     const timetable = { name: "课表", courses };
-    console.log('=== 导入结果 ===');
-    console.log('课程数量:', courses.length);
-    console.log('课表数据:', JSON.stringify(timetable, null, 2));
     window.YiClassChannel.postMessage(JSON.stringify(timetable));
 })();

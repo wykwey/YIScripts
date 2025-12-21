@@ -1,0 +1,67 @@
+name: Build and commit SQLite DB
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  # 允许 workflow push
+
+    steps:
+      # 1️ Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2️ Setup Dart
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: '3.5.0'
+
+      # 3️ Install dependencies
+      - name: Pub get
+        run: dart pub get
+
+      # 4️ Build SQLite database
+      - name: Build SQLite DB
+        run: dart run bin/build_sqlite.dart
+
+      # 5️ Commit index.db to isolated branch
+      - name: Commit index.db to index-data-sqlite branch
+        if: success()
+        run: |
+          ASSET_BRANCH="index-data-sqlite"
+
+          git config user.name "GitHub Actions Bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # 检查生成文件
+          if [ ! -f dist/index.db ]; then
+            echo "错误：未找到 dist/index.db，请检查 build_sqlite.dart"
+            exit 1
+          fi
+
+          # 创建孤立分支
+          git checkout --orphan $ASSET_BRANCH
+
+          # 清空工作区
+          git rm -rf .
+
+          # 复制 index.db 到根目录
+          cp dist/index.db ./index.db
+
+          # 添加并提交
+          git add index.db
+          git commit -m "chore: update index.db $(date +'%Y%m%d%H%M%S') [skip ci]"
+
+          # 强制 push
+          git push --force origin $ASSET_BRANCH
+
+          echo "成功将 index.db 发布到 $ASSET_BRANCH 分支，仅保留最新提交"
